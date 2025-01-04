@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --text-color: #2b2d42;
+            --bg-color: #f8f9fa;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        .tool-container {
+            padding: 20px;
+            box-sizing: border-box;
+}
+
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .header h1 {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .container {
+            margin: 2rem auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: nowrap; /* 改回nowrap，防止换行 */
+}
+
+
+        .controls {
+            flex: 0 0 350px; /* 不伸缩，固定宽度350px */
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .preview {
+            flex: 1;
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            position: relative;
+            min-width: 500px; /* 设置最小宽度 */
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+
+        .control-group input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .value-display {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        /* 新增响应式样式 */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                padding: 0 1rem;
+            }
+    
+            .controls {
+                flex: none;
+                width: 100%;
+            }
+            
+            .preview {
+                min-width: 100%;
+            }
+            .footer {
+                width: 90%;
+                margin: 1rem auto;
+                padding: 1.5rem;
+            }
+}
+
+/* Ghost博客特定样式覆盖 */
+.post-full-content .tool-container {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 20px !important;
+}
+
+.post-full-content .container {
+    max-width: 1200px !important;
+    margin: 2rem auto !important;
+}
+
+.post-full-content .header,
+.post-full-content .footer {
+    max-width: 1200px !important;
+    margin: 2rem auto !important;
+}
+
+/* 修改actions样式 */
+.actions {
+    display: flex;
+    gap: 1rem;
+    margin: 20px auto;
+    justify-content: center;
+}
+
+/* 确保canvas居中显示 */
+.preview canvas {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+       
+
+        .preview-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            border: 2px dashed #95a5a6;
+            border-radius: 8px;
+            padding: 20px;
+}
+        
+
+        .preview-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .preview-nav:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .preview-nav.prev {
+            left: -20px;
+        }
+
+        .preview-nav.next {
+            right: -20px;
+        }
+
+        .thumbnail-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 1rem;
+            overflow-x: auto;
+            padding: 10px 0;
+            scrollbar-width: thin;
+        }
+
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            cursor: pointer;
+            object-fit: cover;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .thumbnail.active {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .thumbnail:hover {
+            transform: scale(1.05);
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
+        }
+
+        .file-info {
+            text-align: center;
+            margin: 1rem 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #uploadBtn {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .preview canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .thumbnail-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .thumbnail-container::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
+        .nav-hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="tool-container">
+    <div class="container">
+        <div class="controls">
+            <div class="control-group">
+                <label>上传照片</label>
+                <input type="file" id="imageInput" accept="image/*" multiple>
+                <button id="uploadBtn">选择照片</button>
+                <div class="file-info">已选择 <span id="fileCount">0</span> 张照片</div>
+            </div>
+            <div class="control-group">
+                <label>边框宽度</label>
+                <input type="range" id="borderWidth" min="5" max="20" value="10" step="1">
+                <div class="value-display">当前值：<span id="borderWidthValue">10%</span></div>
+            </div>
+            <div class="control-group">
+                <label>描边宽度</label>
+                <input type="range" id="strokeWidth" min="1" max="20" value="15" step="1">
+                <div class="value-display">当前值：<span id="strokeWidthValue">15px</span></div>
+            </div>
+            <div class="control-group">
+                <label>相机品牌</label>
+                <input type="text" id="camera" placeholder="例如：LEICA M6、Nikon FM2">
+            </div>
+            <div class="control-group">
+                <label>胶片型号</label>
+                <input type="text" id="film" placeholder="例如：Portra 400、HP5 Plus">
+            </div>
+            <div class="control-group">
+                <label>文字大小</label>
+                <input type="range" id="fontSize" min="24" max="72" value="50" step="1">
+                <div class="value-display">当前值：<span id="fontSizeValue">50px</span></div>
+            </div>
+        </div>
+        <div class="preview">
+            <div class="preview-container">
+                <button class="preview-nav prev nav-hidden">◀</button>
+                <canvas id="previewCanvas"></canvas>
+                <button class="preview-nav next nav-hidden">▶</button>
+            </div>
+            <div class="thumbnail-container" id="thumbnailContainer"></div>
+            <div class="actions">
+                <button id="downloadCurrent">下载当前图片</button>
+                <button id="downloadAll">下载全部图片</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentImageIndex = 0;
+        let images = [];
+        let processedCanvases = new Map();
+
+        // 获取DOM元素
+        const imageInput = document.getElementById('imageInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const thumbnailContainer = document.getElementById('thumbnailContainer');
+        const prevBtn = document.querySelector('.prev');
+        const nextBtn = document.querySelector('.next');
+        const downloadCurrentBtn = document.getElementById('downloadCurrent');
+        const downloadAllBtn = document.getElementById('downloadAll');
+
+        // 事件监听器
+        uploadBtn.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', handleImageUpload);
+        prevBtn.addEventListener('click', showPreviousImage);
+        nextBtn.addEventListener('click', showNextImage);
+        downloadCurrentBtn.addEventListener('click', downloadCurrentImage);
+        downloadAllBtn.addEventListener('click', downloadAllImages);
+
+        // 控制项变化监听
+        ['borderWidth', 'strokeWidth', 'fontSize'].forEach(id => {
+            const element = document.getElementById(id);
+            element.addEventListener('input', function() {
+                document.getElementById(id + 'Value').textContent = 
+                    this.value + (id === 'borderWidth' ? '%' : 'px');
+                updateCurrentImage();
+            });
+        });
+
+        ['camera', 'film'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updateCurrentImage);
+        });
+
+        async function handleImageUpload(event) {
+            const files = Array.from(event.target.files);
+            document.getElementById('fileCount').textContent = files.length;
+            
+            images = [];
+            processedCanvases.clear();
+            thumbnailContainer.innerHTML = '';
+            
+            for (let file of files) {
+                const img = await loadImage(file);
+                images.push(img);
+                createThumbnail(img, images.length - 1);
+            }
+
+            if (images.length > 0) {
+                currentImageIndex = 0;
+                updateNavigationButtons();
+                updateCurrentImage();
+            }
+        }
+
+        function loadImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function createThumbnail(img, index) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 80;
+            canvas.height = 80;
+            canvas.className = 'thumbnail';
+            canvas.dataset.index = index;
+
+            const ctx = canvas.getContext('2d');
+            const scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+            const x = (canvas.width - img.width * scale) / 2;
+            const y = (canvas.height - img.height * scale) / 2;
+            
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+            canvas.addEventListener('click', () => {
+                currentImageIndex = index;
+                updateCurrentImage();
+                updateNavigationButtons();
+                updateThumbnailSelection();
+            });
+
+            thumbnailContainer.appendChild(canvas);
+            updateThumbnailSelection();
+        }
+
+        function updateNavigationButtons() {
+            prevBtn.classList.toggle('nav-hidden', images.length <= 1 || currentImageIndex === 0);
+            nextBtn.classList.toggle('nav-hidden', images.length <= 1 || currentImageIndex === images.length - 1);
+        }
+
+        function updateThumbnailSelection() {
+            const thumbnails = thumbnailContainer.getElementsByClassName('thumbnail');
+            Array.from(thumbnails).forEach((thumb, index) => {
+                thumb.classList.toggle('active', index === currentImageIndex);
+            });
+        }
+
+        function showPreviousImage() {
+            if (currentImageIndex > 0) {
+                currentImageIndex--;
+                updateCurrentImage();
+                updateNavigationButtons();
+                updateThumbnailSelection();
+            }
+        }
+
+        function showNextImage() {
+            if (currentImageIndex < images.length - 1) {
+                currentImageIndex++;
+                updateCurrentImage();
+                updateNavigationButtons();
+                updateThumbnailSelection();
+            }
+        }
+
+        function updateCurrentImage() {
+            if (images.length === 0) return;
+
+            const img = images[currentImageIndex];
+            const borderWidth = document.getElementById('borderWidth').value / 100;
+            const strokeWidth = parseInt(document.getElementById('strokeWidth').value);
+            const camera = document.getElementById('camera').value;
+            const film = document.getElementById('film').value;
+            const fontSize = document.getElementById('fontSize').value;
+
+            const borderSize = img.width * borderWidth;
+            previewCanvas.width = img.width + (borderSize * 2);
+            previewCanvas.height = img.height + (borderSize * 2) + borderSize * 2;
+
+            const ctx = previewCanvas.getContext('2d');
+
+            // 绘制白色背景
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+            // 绘制描边
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeRect(
+                borderSize - strokeWidth/2,
+                borderSize - strokeWidth/2,
+                img.width + strokeWidth,
+                img.height + strokeWidth
+            );
+
+            // 绘制图片
+            ctx.drawImage(img, borderSize, borderSize);
+
+            // 添加文字
+            const textY = previewCanvas.height - borderSize;
+            const spacing = fontSize * 3;
+
+            if (camera) {
+                ctx.fillStyle = '#000';
+                ctx.font = `500 ${fontSize * 2.5}px "Playfair Display", "Noto Sans SC"`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const cameraText = `📷 ${camera.toUpperCase()}`;
+                ctx.fillText(cameraText, previewCanvas.width/2, textY - spacing * 1.2);
+            }
+
+            if (film) {
+                ctx.fillStyle = '#333';
+                ctx.font = `500 ${fontSize * 2.5}px "Playfair Display", "Noto Sans SC"`;
+                const filmText = `🎞️ ${film.toUpperCase()}`;
+                ctx.fillText(filmText, previewCanvas.width/2, textY - spacing * 0.2);
+            }
+
+            // 保存处理后的canvas
+            processedCanvases.set(currentImageIndex, previewCanvas.toDataURL('image/jpeg', 0.8));
+        }
+
+        function downloadCurrentImage() {
+    if (images.length === 0) return;
+    
+    const originalFileName = imageInput.files[currentImageIndex].name;
+    const newFileName = originalFileName.replace(/\.[^/.]+$/, '') + '-with-border.jpg';
+    
+    const link = document.createElement('a');
+    link.download = newFileName;
+    link.href = processedCanvases.get(currentImageIndex);
+    link.click();
+}
+
+async function downloadAllImages() {
+    if (images.length === 0) return;
+
+    // 确保所有图片都已处理
+    for (let i = 0; i < images.length; i++) {
+        if (!processedCanvases.has(i)) {
+            currentImageIndex = i;
+            updateCurrentImage();
+        }
+    }
+
+    // 依次下载所有图片
+    for (let i = 0; i < images.length; i++) {
+        const originalFileName = imageInput.files[i].name;
+        const newFileName = originalFileName.replace(/\.[^/.]+$/, '') + '-with-border.jpg';
+        
+        const link = document.createElement('a');
+        link.download = newFileName;
+        link.href = processedCanvases.get(i);
+        link.click();
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+}
+    </script>
+    </div>
+</body>
+</html>
